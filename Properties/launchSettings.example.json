@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:5000",
+      "sslPort": 44300
+    }
+  },
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "http://localhost:5000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DEFAULT_SMTP_HOST": "smtp.gmail.com",
+        "DEFAULT_SMTP_PORT": "587",
+        "DEFAULT_EMAIL": "your-email@gmail.com",
+        "DEFAULT_EMAIL_PASSWORD": "your-app-password",
+        "DEFAULT_FROM_NAME": "Default Sender"
+      }
+    },
+    "https": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "https://localhost:7000;http://localhost:5000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DEFAULT_SMTP_HOST": "smtp.gmail.com",
+        "DEFAULT_SMTP_PORT": "587",
+        "DEFAULT_EMAIL": "your-email@gmail.com",
+        "DEFAULT_EMAIL_PASSWORD": "your-app-password",
+        "DEFAULT_FROM_NAME": "Default Sender"
+      }
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DEFAULT_SMTP_HOST": "smtp.gmail.com",
+        "DEFAULT_SMTP_PORT": "587",
+        "DEFAULT_EMAIL": "your-email@gmail.com",
+        "DEFAULT_EMAIL_PASSWORD": "your-app-password",
+        "DEFAULT_FROM_NAME": "Default Sender"
+      }
+    }
+  }
+}

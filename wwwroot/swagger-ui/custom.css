@@ -1,0 +1,21 @@
+/* Custom styles for Swagger UI */
+.swagger-ui .opblock-summary-description {
+    font-size: 13px;
+}
+
+/* Date-time picker styling */
+.swagger-ui input[type="datetime-local"] {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.swagger-ui .parameter__name {
+    font-weight: bold;
+}
+
+.swagger-ui .parameter__type {
+    color: #666;
+    font-size: 12px;
+} 
