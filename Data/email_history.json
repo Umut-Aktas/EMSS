@@ -1,0 +1,18 @@
+[
+  {
+    "Id": "6ad8cc26-f1cf-4d53-a362-6d2d10a028ff",
+    "Timestamp": "2025-07-28T13:11:00.9899519Z",
+    "From": "xdzaahaha@gmail.com",
+    "To": "xdzaahaha1@gmail.com",
+    "Cc": [],
+    "Bcc": [],
+    "Subject": "random",
+    "Body": "156156651651",
+    "AttachmentNames": [],
+    "IsSuccess": true,
+    "ErrorMessage": null,
+    "SmtpHost": "smtp.gmail.com",
+    "SmtpPort": 587,
+    "SmtpUser": "xdzaahaha@gmail.com"
+  }
+]

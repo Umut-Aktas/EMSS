@@ -1,5 +1,21 @@
 using EMailSender;
 using System.Reflection;
+using System.Text.Json;
+
+var jsonText = File.ReadAllText("Properties/launchSettings.json");
+using var doc = JsonDocument.Parse(jsonText);
+
+// Profil adını kendi launchSettings.json’daki profil adıyla değiştir
+var profile = doc.RootElement
+    .GetProperty("profiles")
+    .GetProperty("ConsoleApp");
+
+var env = profile.GetProperty("environmentVariables");
+
+foreach (var item in env.EnumerateObject())
+{
+    Environment.SetEnvironmentVariable(item.Name, item.Value.GetString());
+}
 
 var builder = WebApplication.CreateBuilder(args);
 

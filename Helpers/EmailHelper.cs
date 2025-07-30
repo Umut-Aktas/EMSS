@@ -20,7 +20,7 @@ namespace EMailSender
         {
             Console.WriteLine("=== EMAIL HELPER KULLANIM KILAVUZU ===");
             Console.WriteLine();
-            
+
             Console.WriteLine("1. SendEmail() - Tek e-posta gönderir (Tüm SMTP ayarlarını manuel girin)");
             Console.WriteLine("   Parametreler:");
             Console.WriteLine("   - smtpHost: SMTP sunucu adresi (örn: smtp.gmail.com)");
@@ -35,7 +35,7 @@ namespace EMailSender
             Console.WriteLine("   - bcc: BCC alıcıları (opsiyonel)");
             Console.WriteLine("   - attachmentPaths: Dosya ekleri yolları (opsiyonel)");
             Console.WriteLine();
-            
+
             Console.WriteLine("1b. SendEmailQuick() - Hızlı e-posta gönderir (Default ayarları kullanır)");
             Console.WriteLine("   Parametreler:");
             Console.WriteLine("   - to: Alıcı e-posta adresi");
@@ -44,37 +44,37 @@ namespace EMailSender
             Console.WriteLine("   - cc, bcc, attachmentPaths: Opsiyonel");
             Console.WriteLine("   NOT: launchSettings.json'da DEFAULT_EMAIL ve DEFAULT_EMAIL_PASSWORD ayarlanmalı");
             Console.WriteLine();
-            
+
             Console.WriteLine("2. SendBulkEmail() - Toplu e-posta gönderir (Manuel SMTP ayarları)");
             Console.WriteLine("   SendEmail ile aynı parametreler, ancak 'to' yerine 'recipients' listesi kullanır");
             Console.WriteLine();
-            
+
             Console.WriteLine("2b. SendBulkEmailQuick() - Hızlı toplu e-posta gönderir (Default ayarları)");
             Console.WriteLine("   - recipients: Alıcı listesi");
             Console.WriteLine("   - subject, body: E-posta konusu ve içeriği");
             Console.WriteLine("   - cc, bcc, attachmentPaths: Opsiyonel");
             Console.WriteLine();
-            
+
             Console.WriteLine("3. GetEmailHistory() - E-posta geçmişini getirir");
             Console.WriteLine("   Parametresiz, gönderilen e-postaların geçmişini döndürür");
             Console.WriteLine();
-            
+
             Console.WriteLine("4. CheckHealth() - Sistem durumunu kontrol eder");
             Console.WriteLine("   Parametresiz, sistem sağlık bilgilerini döndürür");
             Console.WriteLine();
-            
+
             Console.WriteLine("HIZLI KULLANIM ÖRNEĞİ (Önerilen):");
             Console.WriteLine("var result = EmailHelper.SendEmailQuick(");
             Console.WriteLine("    \"receiver@example.com\", \"Test Subject\", \"Test Body\");");
             Console.WriteLine();
-            
+
             Console.WriteLine("MANUEL KULLANIM ÖRNEĞİ:");
             Console.WriteLine("var result = EmailHelper.SendEmail(");
             Console.WriteLine("    \"smtp.gmail.com\", 587, \"user@gmail.com\", \"password\",");
             Console.WriteLine("    \"sender@example.com\", \"receiver@example.com\",");
             Console.WriteLine("    \"Test Subject\", \"Test Body\");");
             Console.WriteLine();
-            
+
             Console.WriteLine("DEFAULT AYARLAR YAPLANDIRMA:");
             Console.WriteLine("launchSettings.json dosyasında şu environment variable'ları ayarlayın:");
             Console.WriteLine("- DEFAULT_EMAIL: your-email@gmail.com");
@@ -82,8 +82,8 @@ namespace EMailSender
             Console.WriteLine("- DEFAULT_SMTP_HOST: smtp.gmail.com (varsayılan)");
             Console.WriteLine("- DEFAULT_SMTP_PORT: 587 (varsayılan)");
             Console.WriteLine();
-            
-            Console.WriteLine("NOT: Gmail için uygulama şifresi kullanmanız gerekebilir.");
+
+            Console.WriteLine("NOT: Gmail için uygulama şifresi gerekir.");
             Console.WriteLine("=====================================");
         }
 
@@ -92,16 +92,48 @@ namespace EMailSender
         /// </summary>
         private static (string host, int port, string user, string pass) GetDefaultSmtpSettings()
         {
-            var host = Environment.GetEnvironmentVariable("DEFAULT_SMTP_HOST") ?? "smtp.gmail.com";
-            var portStr = Environment.GetEnvironmentVariable("DEFAULT_SMTP_PORT") ?? "587";
-            var user = Environment.GetEnvironmentVariable("DEFAULT_EMAIL") ?? "";
-            var pass = Environment.GetEnvironmentVariable("DEFAULT_EMAIL_PASSWORD") ?? "";
-            
-            if (!int.TryParse(portStr, out int port))
-                port = 587;
-                
-            return (host, port, user, pass);
+            var accountInfosFilePath = Path.Combine(Directory.GetCurrentDirectory(), "AccountInfos.json");
+
+            try
+            {
+                if (File.Exists(accountInfosFilePath))
+                {
+                    string json = File.ReadAllText(accountInfosFilePath);
+                    var data = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+
+                    if (data != null && data.ContainsKey("MailAdress") && data.ContainsKey("Password"))
+                    {
+                        string mail = data["MailAdress"];
+                        string password = data["Password"];
+
+                        var host = Environment.GetEnvironmentVariable("DEFAULT_SMTP_HOST") ?? "smtp.gmail.com";
+                        var portStr = Environment.GetEnvironmentVariable("DEFAULT_SMTP_PORT") ?? "587";
+                        var user = Environment.GetEnvironmentVariable("DEFAULT_EMAIL") ?? mail;
+                        var pass = Environment.GetEnvironmentVariable("DEFAULT_EMAIL_PASSWORD") ?? password;
+
+                        if (!int.TryParse(portStr, out int port))
+                            port = 587;
+
+                        return (host, port, user, pass);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Mail address or password not found in the JSON file. Please ensure SaveMailAccount has been called.");
+                    }
+                }
+                else
+                {
+                    throw new FileNotFoundException("AccountInfos.json file not found. Please ensure SaveMailAccount has been called.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                // Optionally, rethrow or handle the exception as needed.
+                throw;
+            }
         }
+
 
         /// <summary>
         /// Default ayarları kullanarak tek e-posta gönderir (Sadece alıcı, konu ve içerik belirtmeniz yeterli)
@@ -115,7 +147,7 @@ namespace EMailSender
             List<string>? attachmentPaths = null)
         {
             var (host, port, user, pass) = GetDefaultSmtpSettings();
-            
+
             if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
             {
                 return new EmailResponse<EmailSendResult>
@@ -125,7 +157,7 @@ namespace EMailSender
                     Data = new EmailSendResult { Success = false, EmailId = string.Empty }
                 };
             }
-            
+
             return SendEmail(host, port, user, pass, user, to, subject, body, cc, bcc, attachmentPaths);
         }
 
@@ -141,7 +173,7 @@ namespace EMailSender
             List<string>? attachmentPaths = null)
         {
             var (host, port, user, pass) = GetDefaultSmtpSettings();
-            
+
             if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
             {
                 return new EmailResponse<BulkEmailResult>
@@ -151,7 +183,7 @@ namespace EMailSender
                     Data = new BulkEmailResult()
                 };
             }
-            
+
             return SendBulkEmail(host, port, user, pass, user, recipients, subject, body, cc, bcc, attachmentPaths);
         }
 
@@ -189,49 +221,52 @@ namespace EMailSender
 
             try
             {
-                var mail = new MailMessage();
-                mail.From = new MailAddress(from);
-                mail.To.Add(to);
-                mail.Subject = subject;
-                mail.Body = body;
-
-                // CC
-                if (cc != null)
+                using (var mail = new MailMessage())
                 {
-                    foreach (var c in cc)
-                    {
-                        if (!string.IsNullOrWhiteSpace(c))
-                            mail.CC.Add(c);
-                    }
-                }
+                    mail.From = new MailAddress(from);
+                    mail.To.Add(to);
+                    mail.Subject = subject;
+                    mail.Body = body;
 
-                // BCC
-                if (bcc != null)
-                {
-                    foreach (var b in bcc)
+                    // CC
+                    if (cc != null)
                     {
-                        if (!string.IsNullOrWhiteSpace(b))
-                            mail.Bcc.Add(b);
-                    }
-                }
-
-                // Attachments
-                if (attachmentPaths != null)
-                {
-                    foreach (var path in attachmentPaths)
-                    {
-                        if (File.Exists(path))
+                        foreach (var c in cc)
                         {
-                            mail.Attachments.Add(new Attachment(path));
+                            if (!string.IsNullOrWhiteSpace(c))
+                                mail.CC.Add(c);
                         }
                     }
+
+                    // BCC
+                    if (bcc != null)
+                    {
+                        foreach (var b in bcc)
+                        {
+                            if (!string.IsNullOrWhiteSpace(b))
+                                mail.Bcc.Add(b);
+                        }
+                    }
+
+                    // Attachments
+                    if (attachmentPaths != null)
+                    {
+                        foreach (var path in attachmentPaths)
+                        {
+                            if (File.Exists(path))
+                            {
+                                mail.Attachments.Add(new Attachment(path));
+                            }
+                        }
+                    }
+
+                    using (var smtpClient = new SmtpClient(smtpHost, smtpPort))
+                    {
+                        smtpClient.Credentials = new NetworkCredential(smtpUser, smtpPass);
+                        smtpClient.EnableSsl = true;
+                        smtpClient.Send(mail);
+                    }
                 }
-
-                var smtpClient = new SmtpClient(smtpHost, smtpPort);
-                smtpClient.Credentials = new NetworkCredential(smtpUser, smtpPass);
-                smtpClient.EnableSsl = true;
-
-                smtpClient.Send(mail);
 
                 var emailId = Guid.NewGuid().ToString();
                 emailHistory.IsSuccess = true;
@@ -242,16 +277,12 @@ namespace EMailSender
                 response.Status = true;
                 response.Message = "E-posta başarıyla gönderildi.";
 
-                // Save to history
                 SaveEmailHistory(emailHistory);
-
-                mail.Dispose();
-                smtpClient.Dispose();
             }
             catch (Exception ex)
             {
                 emailHistory.IsSuccess = false;
-                emailHistory.ErrorMessage = ex.Message;
+                emailHistory.ErrorMessage = ex.ToString();
                 emailHistory.Timestamp = DateTime.UtcNow;
 
                 response.Data = new EmailSendResult { Success = false, EmailId = string.Empty };
@@ -282,7 +313,7 @@ namespace EMailSender
         {
             var response = new EmailResponse<BulkEmailResult>();
             var bulkResult = new BulkEmailResult();
-            
+
             if (recipients == null || !recipients.Any())
             {
                 response.Data = bulkResult;
@@ -299,7 +330,7 @@ namespace EMailSender
                 try
                 {
                     var singleResult = SendEmail(smtpHost, smtpPort, smtpUser, smtpPass, from, recipient, subject, body, cc, bcc, attachmentPaths);
-                    
+
                     if (singleResult.Status)
                     {
                         bulkResult.SuccessCount++;
@@ -341,7 +372,7 @@ namespace EMailSender
                     if (!string.IsNullOrWhiteSpace(jsonContent))
                     {
                         var history = JsonSerializer.Deserialize<List<EmailHistory>>(jsonContent);
-                        
+
                         if (history != null)
                         {
                             response.History = history.OrderByDescending(h => h.Timestamp).ToList();
@@ -362,8 +393,8 @@ namespace EMailSender
             catch (Exception ex)
             {
                 Console.WriteLine($"Email history okuma hatası: {ex.Message}");
-                return new EmailHistoryResponse 
-                { 
+                return new EmailHistoryResponse
+                {
                     History = new List<EmailHistory>(),
                     TotalCount = 0,
                     SuccessCount = 0,
@@ -377,8 +408,9 @@ namespace EMailSender
         /// </summary>
         public static object CheckHealth()
         {
-            return new { 
-                Status = "Healthy", 
+            return new
+            {
+                Status = "Healthy",
                 Timestamp = DateTime.UtcNow,
                 Service = "Email Helper Library",
                 Version = "1.0.0"
@@ -413,6 +445,30 @@ namespace EMailSender
             {
                 Console.WriteLine($"Email history kaydetme hatası: {ex.Message}");
             }
+        }
+
+        public static void SaveMailAccount(string mailAdress, string password)
+		{
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "AccountInfos.json");
+
+            var data = new Dictionary<string, string>
+            {
+                ["MailAdress"] = mailAdress,
+                ["Password"] = password
+            };
+
+            string json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
+
+            if (File.Exists(path))
+            {
+                File.WriteAllText(path, json);
+            }
+            else
+            {
+                File.WriteAllText(path, "[]"); // Boş bir JSON dizisi yaz
+                File.WriteAllText(path, json); // Yeni veriyi yaz
+            }
+
         }
     }
 }
