@@ -27,7 +27,7 @@ EmailSender, .NET 8 tabanlı, kolay kullanımlı ve güvenli email gönderimi i�
 - ✅ **Email Geçmişi** - Otomatik kayıt ve takip
 - ✅ **Web API & DLL** - İki farklı kullanım seçeneği
 - ✅ **Gmail Entegrasyonu** - Gmail SMTP desteği
-- ✅ **Güvenli Yapılandırma** - Environment variables ile ayar
+- ✅ **Güvenli Yapılandırma** - AccountInfos.json ile ayar
 - ✅ **Hata Yönetimi** - Kapsamlı hata takibi
 
 ---
@@ -37,7 +37,10 @@ EmailSender, .NET 8 tabanlı, kolay kullanımlı ve güvenli email gönderimi i�
 ```csharp
 using EMailSender;
 
-// Tek satırda email gönderme (mailinizi ve şifrenizi önceden girmeniz gerekmektedir)
+// Önce email hesabınızı kaydedin (sadece bir kez)
+EmailHelper.SaveMailAccount("your-email@gmail.com", "your-app-password");
+
+// Tek satırda email gönderme
 var result = EmailHelper.SendEmailQuick(
     "receiver@example.com", 
     "Test Subject", 
@@ -106,30 +109,22 @@ dotnet run
 2. "Mail" için yeni bir app password oluşturun
 3. Oluşan 16 haneli şifreyi not alın
 
-### 3. launchSettings.json Yapılandırması
+### 3. Email Hesabı Kaydetme
 
-Proje klasörünüzde `Properties/launchSettings.json` dosyası oluşturun:
+EmailHelper'ı kullanmadan önce email hesabınızı kaydetmeniz gerekmektedir:
 
-```json
-{
-  "profiles": {
-    "Default": {
-      "commandName": "Project",
-      "environmentVariables": {
-        "DEFAULT_EMAIL": "your-email@gmail.com",
-        "DEFAULT_EMAIL_PASSWORD": "your-16-digit-app-password",
-        "DEFAULT_SMTP_HOST": "smtp.gmail.com",
-        "DEFAULT_SMTP_PORT": "587"
-      }
-    }
-  }
-}
+```csharp
+// Sadece bir kez çalıştırın
+EmailHelper.SaveMailAccount("your-email@gmail.com", "your-16-digit-app-password");
 ```
+
+Bu işlem `AccountInfos.json` dosyası oluşturacak ve email bilgilerinizi güvenli bir şekilde saklayacaktır.
 
 **ÖNEMLİ:** 
 - `your-email@gmail.com` yerine gerçek Gmail adresinizi yazın
 - `your-16-digit-app-password` yerine Gmail App Password'ünüzü yazın (normal şifre değil!)
-- Eğer email ve şifrenizi yapılandırmazsanız quick methodlarına erişemezsiniz.
+- Bu işlemi sadece bir kez yapmanız yeterlidir
+- Eğer email hesabınızı kaydetmezseniz quick methodlarına erişemezsiniz
 
 ---
 
@@ -245,6 +240,12 @@ Console.WriteLine($"Sistem durumu: {health}");
 EmailHelper.Help();
 ```
 
+#### 4. SaveMailAccount() - Email Hesabı Kaydetme
+```csharp
+// Email hesabınızı kaydetmek için (sadece bir kez)
+EmailHelper.SaveMailAccount("your-email@gmail.com", "your-app-password");
+```
+
 ---
 
 ## 🌐 Web API Kullanımı
@@ -287,6 +288,9 @@ curl -X POST "http://localhost:5000/api/email/bulk" \
 
 ### Hızlı Fonksiyonlar (Önerilen)
 ```csharp
+// Email hesabı kaydetme (sadece bir kez)
+EmailHelper.SaveMailAccount(email, password)
+
 // Tek email
 EmailHelper.SendEmailQuick(to, subject, body, cc?, bcc?, attachments?)
 
@@ -314,7 +318,13 @@ EmailHelper.SendBulkEmail(host, port, user, pass, from, recipients, subject, bod
 
 ## 💡 Kullanım Örnekleri
 
-### 1. Basit Email
+### 1. İlk Kurulum
+```csharp
+// İlk kullanımda email hesabınızı kaydedin
+EmailHelper.SaveMailAccount("your-email@gmail.com", "your-app-password");
+```
+
+### 2. Basit Email
 ```csharp
 var result = EmailHelper.SendEmailQuick(
     "user@example.com", 
@@ -323,7 +333,7 @@ var result = EmailHelper.SendEmailQuick(
 );
 ```
 
-### 2. Dosya Ekli Email
+### 3. Dosya Ekli Email
 ```csharp
 var attachments = new List<string> { @"C:\path\to\file.pdf" };
 var result = EmailHelper.SendEmailQuick(
@@ -334,7 +344,7 @@ var result = EmailHelper.SendEmailQuick(
 );
 ```
 
-### 3. CC/BCC'li Email
+### 4. CC/BCC'li Email
 ```csharp
 var cc = new List<string> { "cc@example.com" };
 var bcc = new List<string> { "bcc@example.com" };
@@ -348,7 +358,7 @@ var result = EmailHelper.SendEmailQuick(
 );
 ```
 
-### 4. Toplu Email
+### 5. Toplu Email
 ```csharp
 var recipients = new List<string> { "user1@example.com", "user2@example.com" };
 var result = EmailHelper.SendBulkEmailQuick(
@@ -358,7 +368,7 @@ var result = EmailHelper.SendBulkEmailQuick(
 );
 ```
 
-### 5. Tam Örnek Program
+### 6. Tam Örnek Program
 ```csharp
 using EMailSender;
 using System;
@@ -368,6 +378,9 @@ class Program
 {
     static void Main(string[] args)
     {
+        // İlk kullanımda email hesabınızı kaydedin (sadece bir kez)
+        EmailHelper.SaveMailAccount("your-email@gmail.com", "your-app-password");
+        
         // Yardım bilgilerini göster
         EmailHelper.Help();
         
@@ -406,10 +419,15 @@ class Program
 
 ## 🔍 Sorun Giderme
 
-### "Default email ayarları yapılandırılmamış" Hatası
-- `Properties/launchSettings.json` dosyasını kontrol edin
-- `DEFAULT_EMAIL` ve `DEFAULT_EMAIL_PASSWORD` ayarlandığından emin olun
-- Environment variable'ların doğru yüklendiğinden emin olun
+### "AccountInfos.json file not found" Hatası
+- `EmailHelper.SaveMailAccount()` fonksiyonunu çağırdığınızdan emin olun
+- `AccountInfos.json` dosyasının proje dizininde oluşturulduğunu kontrol edin
+- Email ve şifre bilgilerinin doğru olduğundan emin olun
+
+### "Mail address or password not found" Hatası
+- `SaveMailAccount()` fonksiyonunu tekrar çağırın
+- `AccountInfos.json` dosyasının içeriğini kontrol edin
+- Dosya formatının doğru olduğundan emin olun
 
 ### Gmail Authentication Hatası
 - 2-Factor Authentication aktif mi kontrol edin
@@ -418,7 +436,6 @@ class Program
 
 ### Performans Sorunları
 - Toplu email için `SendBulkEmailQuick()` kullanın
-- Çok fazla alıcı varsa bölümlere ayırın (örn: 50'şer)
 - Gmail günlük limitini aşmayın (500 email)
 
 ### Dosya Eki Sorunları
@@ -434,12 +451,6 @@ class Program
 - **Günlük Email:** 500 email (ücretsiz hesap)
 - **Dosya Boyutu:** 25MB maksimum
 - **Toplu Email:** Önerilen batch size: 50
-
-### Güvenlik Önerileri
-1. **SMTP şifrelerini kodda saklamayın** - Configuration dosyalarından okuyun
-2. **launchSettings.json dosyasını Git'e commit etmeyin**
-3. **App Password kullanın** - Normal Gmail şifresi çalışmaz (app password kullanan her mail servisi için geçerli)
-4. **Environment variables kullanın** - Güvenli yapılandırma için
 
 ### Error Handling
 ```csharp
@@ -461,6 +472,7 @@ catch (Exception ex)
 }
 ```
 
+---
 
 ## 📞 Destek
 
