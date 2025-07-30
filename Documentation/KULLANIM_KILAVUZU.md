@@ -10,8 +10,7 @@
 7. [Fonksiyon Referansı](#fonksiyon-referansı)
 8. [Kullanım Örnekleri](#kullanım-örnekleri)
 9. [Sorun Giderme](#sorun-giderme)
-10. [Limitler ve Güvenlik](#limitler-ve-güvenlik)
-11. [Lisans](#lisans)
+10. [Limitler](#limitler)
 
 ---
 
@@ -478,6 +477,5 @@ catch (Exception ex)
 
 - 💻 **Kod İçi Yardım:** `EmailHelper.Help()` fonksiyonunu çağırın
 - 📖 **Detaylı Dokümantasyon:** Bu kılavuz
-- 🐛 **Sorun Bildirimi:** GitHub Issues kullanın
 
 ---
